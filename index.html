@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Mine Production Dashboard | Mulungushi University</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard">
+        <!-- HEADER SECTION -->
+        <div class="header">
+            <h1>
+                ⛏ MINE PRODUCTION PERFORMANCE DASHBOARD
+                <span class="badge">Copper Mining</span>
+            </h1>
+            <div class="subtitle">
+                Mulungushi University | School of Engineering and Technology | Department of Computer Science and IT
+            </div>
+            <div class="objectives-badge">
+                <span class="objective-item">🎯 Objective 1: Data Collection & Consolidation</span>
+                <span class="objective-item">📊 Objective 2: Visual Dashboard & Charts</span>
+                <span class="objective-item">⚠️ Objective 3: Automatic Bottleneck Alerts</span>
+            </div>
+        </div>
+        
+        <!-- BUTTON GROUP -->
+        <div class="btn-group">
+            <button class="btn btn-primary" id="btn-refresh">
+                🔄 Refresh Dashboard
+            </button>
+            <button class="btn btn-secondary" id="btn-export">
+                📥 Export to CSV
+            </button>
+            <button class="btn btn-warning" id="btn-clear-alerts">
+                🗑 Clear Alerts
+            </button>
+            <button class="btn btn-outline" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+                ⬆ Scroll to Top
+            </button>
+        </div>
+        
+        <!-- REFRESH INFO -->
+        <div class="clearfix">
+            <div class="refresh-info" id="refresh-time">
+                Loading data...
+            </div>
+        </div>
+        
+        <!-- STATISTICS CARDS -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="icon">📊</div>
+                <div class="label">Total Records</div>
+                <div class="value" id="stat-records">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">🏭</div>
+                <div class="label">Production Stages</div>
+                <div class="value" id="stat-stages">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">⚙️</div>
+                <div class="label">Avg Throughput</div>
+                <div class="value" id="stat-avg-throughput">0</div>
+                <div class="unit">t/h</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">⚠️</div>
+                <div class="label">Active Bottlenecks</div>
+                <div class="value" id="stat-active-bottlenecks">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">📉</div>
+                <div class="label">Total Bottlenecks</div>
+                <div class="value" id="stat-total-bottlenecks">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">🏆</div>
+                <div class="label">Best Stage</div>
+                <div class="value" id="stat-best-stage">--</div>
+                <div class="unit" id="stat-best-rate">0 t/h</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">👥</div>
+                <div class="label">Best Shift</div>
+                <div class="value" id="stat-best-shift">--</div>
+                <div class="unit" id="stat-best-shift-eff">0%</div>
+            </div>
+        </div>
+        
+        <!-- KPI CARDS -->
+        <div class="kpi-container">
+            <div class="kpi-card">
+                <h3>📈 TOTAL PRODUCTION</h3>
+                <div class="value" id="total-production">0</div>
+                <div class="sub">tons today</div>
+            </div>
+            <div class="kpi-card">
+                <h3>🎯 TARGET ACHIEVEMENT</h3>
+                <div class="value" id="target-percent">0%</div>
+                <div class="sub">of daily target</div>
+            </div>
+        </div>
+        
+        <!-- CHARTS SECTION -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3>📊 Target vs Actual Production</h3>
+                <div id="target-actual-chart">
+                    <div class="loading">Loading production data...</div>
+                </div>
+            </div>
+            <div class="chart-card">
+                <h3>⚙️ Stage-wise Throughput (tons/hour)</h3>
+                <div id="throughput-chart">
+                    <div class="loading">Loading throughput data...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ALERTS SECTION -->
+        <div class="alerts-card">
+            <h3>
+                ⚠️ ACTIVE BOTTLENECK ALERTS
+                <span style="font-size: 12px; font-weight: normal; color: #6c757d;">Auto-refresh every 30 seconds</span>
+            </h3>
+            <div id="alerts-list">
+                <div class="loading">Monitoring for bottlenecks...</div>
+            </div>
+        </div>
+        
+        <!-- PRODUCTION DATA TABLE -->
+        <div class="table-section">
+            <div class="table-header">
+                <h3>📋 PRODUCTION DATA</h3>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-stage="All">All Stages</button>
+                    <button class="filter-btn" data-stage="Mining">Mining</button>
+                    <button class="filter-btn" data-stage="Crushing">Crushing</button>
+                    <button class="filter-btn" data-stage="Milling">Milling</button>
+                    <button class="filter-btn" data-stage="Flotation">Flotation</button>
+                    <button class="filter-btn" data-stage="Smelting">Smelting</button>
+                </div>
+            </div>
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Stage</th>
+                            <th>Actual (tons)</th>
+                            <th>Target (tons)</th>
+                            <th>Throughput (t/h)</th>
+                            <th>Efficiency</th>
+                            <th>Shift</th>
+                            <th>Supervisor</th>
+                            <th>Equipment</th>
+                            <th>Ore Grade</th>
+                            <th>Weather</th>
+                            <th>Operator</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        <tr><td colspan="12" style="text-align: center;">Loading data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div style="padding: 15px 20px; border-top: 1px solid #e9ecef; display: flex; justify-content: space-between; align-items: center;">
+                <span>Showing <span id="table-count">0</span> records</span>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-secondary" id="btn-show-less" style="padding: 6px 18px;">Show Less</button>
+                    <button class="btn btn-primary" id="btn-show-more" style="padding: 6px 18px;">Show More</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- DAILY SUMMARY TABLE -->
+        <div class="table-section">
+            <div class="table-header">
+                <h3>📅 DAILY PRODUCTION SUMMARY</h3>
+                <span>Last 14 Days</span>
+            </div>
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Actual Production (tons)</th>
+                            <th>Target Production (tons)</th>
+                            <th>Efficiency</th>
+                            <th>Bottlenecks</th>
+                        </tr>
+                    </thead>
+                    <tbody id="summary-body">
+                        <tr><td colspan="5" style="text-align: center;">Loading data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- BOTTLENECK HISTORY TABLE -->
+        <div class="table-section">
+            <div class="table-header">
+                <h3>⚠️ BOTTLENECK HISTORY</h3>
+                <span>Last 20 Events</span>
+            </div>
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Stage</th>
+                            <th>Time</th>
+                            <th>Severity</th>
+                            <th>Score</th>
+                            <th>Root Cause</th>
+                            <th>Corrective Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-body">
+                        <tr><td colspan="6" style="text-align: center;">Loading data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- FOOTER -->
+        <div class="footer">
+            <strong>🏛️ Mulungushi University</strong> | School of Engineering and Technology | Department of Computer Science and Information Technology<br>
+            <strong>🎓 Capstone Project</strong> | <strong>👨‍🎓 Mwape Kelvin</strong> (ID: 202203897) | <strong>👩‍🏫 Supervisor:</strong> Mrs. Mulwanda | <strong>📅 Academic Year:</strong> 2025/2026<br>
+            <span style="font-size: 11px;">⚙️ Bottleneck Threshold: 80% of target | 🔄 Auto-refresh: 30 seconds | 💾 Database: SQLite</span>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>
